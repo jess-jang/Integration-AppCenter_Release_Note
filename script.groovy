@@ -35,9 +35,9 @@ def getBuildNumber() {
  **/
 def getJenkinsUrl() {
 	def url = "%sjob/%s/lastBuild/api/json"
-    url = String.format(url, System.getenv("JENKINS_URL"), URLEncoder.encode(System.getenv("ITEM_JOB_NAME"), "UTF-8"))
-    println "JENKIN_URL : ${url}" 
-    return url
+	url = String.format(url, System.getenv("JENKINS_URL"), URLEncoder.encode(System.getenv("ITEM_JOB_NAME"), "UTF-8"))
+	println "JENKIN_URL : ${url}" 
+	return url
 }
 
 /**
@@ -46,8 +46,8 @@ def getJenkinsUrl() {
 def getJenkinsAuth() {
 	// 1. Jenkins > Profile
 	// 2. API Token > ADD NEW TOKEN
-    def jenkinsAuth = System.getenv("JENKINS_AUTHORIZATION")
-    return "${jenkinsAuth}".bytes.encodeBase64().toString()
+	def jenkinsAuth = System.getenv("JENKINS_AUTHORIZATION")
+	return "${jenkinsAuth}".bytes.encodeBase64().toString()
 }
 
 /**
@@ -55,12 +55,11 @@ def getJenkinsAuth() {
  * @return Release Note Template 리턴
  */
 def reqChangeCommit() {
-	println "reqChangeCommit"
-  
+
 	try {
       
-        def apiUrl = getJenkinsUrl()
-        println apiUrl
+		def apiUrl = getJenkinsUrl()
+		println apiUrl
 		def response = reqApi(getJenkinsAuth(), apiUrl)
 
 		// json으로 변환
@@ -70,42 +69,42 @@ def reqChangeCommit() {
 		// Map
 		def noteMap = new HashMap<String, String>()
     
-      	// 커밋 정보 파싱
+		// 커밋 정보 파싱
 		def items = json.changeSet.items.reverse() // 최신 정보가 0번째 올라오게 소팅 
 		for(item in items) {
-            def format = getJiraId(item) // 커밋 메세지 정보
-            if(format == null) {
-                continue
-            }
+		
+			def format = getJiraId(item) // 커밋 메세지 정보
+			if(format == null) {
+				continue
+			}
 
-            def ids = format.split(",")
-            println "comment ${format}"
-            // println "format ${format}"
-            // println "ids ${ids}" 	
-            if (task.contains("NOTE")) {
-                putMapStringNote(noteMap, comment)
-            }
+			def ids = format.split(",")
+			println "comment ${format}"
+
+			if (task.contains("NOTE")) {
+				putMapStringNote(noteMap, comment)
+			}
 		} 
 
-        def noteContent = getNoteContent(true, noteMap)
-        println "noteContent : ${noteContent}"
-      	
-      	def temaplte = ""
-        temaplte += "** 빌드번호 **"      
-	    temaplte += "\n\n"
-        temaplte += getBuildNumber()
-	    temaplte += "\n\n"
-        temaplte += "** 수정사항 **"
-	    temaplte += "\n\n"      
-        temaplte += noteEtc
+		def noteContent = getNoteContent(true, noteMap)
+		println "noteContent : ${noteContent}"
+
+		def temaplte = ""
+		temaplte += "** 빌드번호 **"      
+		temaplte += "\n\n"
+		temaplte += getBuildNumber()
+		temaplte += "\n\n"
+		temaplte += "** 수정사항 **"
+		temaplte += "\n\n"      
+		temaplte += noteEtc
         
-        /**
-         * Result
-         **/
-      	return temaplte
+		/**
+		 * Result
+		 **/
+      		return temaplte
                            
   	} catch(Exception e) {
-        "Exception reqChangeCommit"
+		"Exception reqChangeCommit"
 		println e.getMessage()
 	}
 }
@@ -114,10 +113,11 @@ def reqChangeCommit() {
  * Map 에 데이터 삽입 Note
  */
 def putMapStringNote(map, comment) {
-    def data = comment.replaceAll("\\[NOTE\\]","").replaceAll("\\[note\\]","").trim()
-  	def isExist = map.get(data)
-  	if(!isExist || isExist == null) {
-    	map.put(data, true)
+	def data = comment.replaceAll("\\[NOTE\\]","").replaceAll("\\[note\\]","").trim()
+	def isExist = map.get(data)
+  	
+	if(!isExist || isExist == null) {
+    		map.put(data, true)
   	}	
 }
 
@@ -126,23 +126,25 @@ def putMapStringNote(map, comment) {
  * @parma isTask 테명 노출여부
  */
 def getNoteContent(isNote, map) {
-    def list = []
-    for (entry in map) {
-      if(isNote) {
-        list.add(entry.key)
-      } else {
-        list.add(entry.value)
-      }
+	def list = []
+	
+	for (entry in map) {
+		if(isNote) {
+			list.add(entry.key)
+		} else {
+			list.add(entry.value)
+		}
   	}
-  	// 정제된 메세지 
+  	
+	// 정제된 메세지 
   	def result = list.join("\n")
 	println result
 
-    if(result.length() > 0) {
-	  	return result
-    } else {
-	  	return null
-    }
+	if(result.length() > 0) {
+		return result
+	} else {
+		return null
+	}
 }
 
 /**
@@ -151,11 +153,11 @@ def getNoteContent(isNote, map) {
 def getJiraId(msg) {
 	try {
 		def matches = msg =~ "^\\[.*?\\]"
-        return matches[0].replaceAll("\\[","").replaceAll("\\]","")  
-    } catch(Exception e) {
-        
+		return matches[0].replaceAll("\\[","").replaceAll("\\]","")  
+	} catch(Exception e) {
+        	""
 	}
-    return null
+	return null
 }
 
 /**
@@ -181,7 +183,7 @@ def reqApi(auth, apiUrl, data = "") {
 
 		def reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))
 		def response = reader.readLine()
-        println response
+		println response
 
 		writer.close()
 		reader.close()  
