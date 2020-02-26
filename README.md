@@ -1,5 +1,5 @@
 ## Release Note 자동화
-- 커밋 메세지의 `[TASK_ID]`를 추출하여 Release Note 자동화
+- 커밋 메세지의 `[TASK_ID]`와 `Message (Subject)` 추출하여 Release Note 자동화
 
 ```
 // Example 
