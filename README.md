@@ -1,6 +1,23 @@
 ## Release Note 자동화
 - 커밋 메세지의 `[TASK_ID]`를 추출하여 Release Note 자동화
 
+```
+// Example 
+빌드번호
+134
+
+수정사항
+검색탭 리프레시 이슈수정
+마이페이지 아이콘 변경 
+
+QA
+2020, 2424, 3837, 4858
+
+UXD
+393, 595, 696
+```
+
+
 ## 방법
 - Jenkins API > Git Diff List 
 - Commit Message의 Jira ID 파싱
