@@ -154,7 +154,7 @@ def getMapValue(map) {
   	}
   	
 	// 정제된 메세지 
-  	def result = list.join("\n")
+  	def result = list.join("\n\n")
 	if(result.length() > 0) {
 		return result
 	} else {
