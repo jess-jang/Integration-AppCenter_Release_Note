@@ -158,7 +158,7 @@ def getMapValue(map) {
 	if(result.length() > 0) {
 		return result
 	} else {
-		return null
+		return "-"
 	}
 }
 
