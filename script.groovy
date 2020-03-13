@@ -19,8 +19,12 @@ println "JENKINS_AUTHORIZATION : ${System.getenv("JENKINS_AUTHORIZATION")}"
 
 /**
  * 시작
- **/
+ */
 def result = reqChangeCommit()()
+
+/**
+ * 
+ */
 println temaplte
 
 /** 
@@ -59,31 +63,34 @@ def reqChangeCommit() {
 	try {
       
 		def apiUrl = getJenkinsUrl()
-		println apiUrl
 		def response = reqApi(getJenkinsAuth(), apiUrl)
 
 		// json으로 변환
-		def jsonSlurper = new JsonSlurper()
-		def json = jsonSlurper.parseText(response.toString()) 
+		def json = new JsonSlurper().parseText(response.toString()) 
 
 		// Map
-		def noteMap = new HashMap<String, String>()
+		def noteMap = new HashMap<String, Boolean>()
+		def qaMap = new HashMap<String, Boolean>()
+		def etcMap = new HashMap<String, Boolean>()
     
 		// 커밋 정보 파싱
 		def items = json.changeSet.items.reverse() // 최신 정보가 0번째 올라오게 소팅 
 		for(item in items) {
-		
-			def format = getJiraId(item) // 커밋 메세지 정보
-			if(format == null) {
+			def id = getJiraId(item) // 커밋 메세지 정보
+			if(id == null) {
 				continue
 			}
 
-			def ids = format.split(",")
-			println "comment ${format}"
-
 			if (task.contains("NOTE")) {
+				// [NOTE]
 				putMapStringNote(noteMap, comment)
-			}
+			} else if (task.contains("QA")) {
+				// [QA]
+				putMapBoolean(qaMap, comment)
+			} else {
+				// [...] 
+				putMapBoolean(etcMap, comment)
+			}	
 		} 
 
 		def noteContent = getNoteContent(true, noteMap)
@@ -96,50 +103,54 @@ def reqChangeCommit() {
 		temaplte += "\n\n"
 		temaplte += "** 수정사항 **"
 		temaplte += "\n\n"      
-		temaplte += noteEtc
+		temaplte += getNoteContent(true, noteMap)
+		temaplte += getNoteContent(true, etcMap)
+		temaplte += "\n\n"
+		temaplte += "** QA **"
+		temaplte += "\n\n"      
+		temaplte += getNoteContent(true, qaMap)
         
 		/**
 		 * Result
 		 **/
-      		return temaplte
-                           
+      		return temaplte      
   	} catch(Exception e) {
-		"Exception reqChangeCommit"
 		println e.getMessage()
 	}
 }
 
 /**
- * Map 에 데이터 삽입 Note
+ * Map에 데이터 삽입 Note
  */
 def putMapStringNote(map, comment) {
-	def data = comment.replaceAll("\\[NOTE\\]","").replaceAll("\\[note\\]","").trim()
+	def data = comment.replaceAll("\\[NOTE\\]","").trim()
 	def isExist = map.get(data)
-  	
-	if(!isExist || isExist == null) {
+	if(!isExist) {
+    		map.put(data, true)
+  	}	
+}
+
+/**
+ * Map에 데이터 삽입 Boolean
+ */
+def putMapBoolean(map, comment) {
+	def isExist = map.get(comment)
+	if(!isExist) {
     		map.put(data, true)
   	}	
 }
 
 /**
  * Map 형태의 데이터를 \n \n 로 리턴
- * @parma isTask 테명 노출여부
  */
-def getNoteContent(isNote, map) {
+def getNoteContent(map) {
 	def list = []
-	
 	for (entry in map) {
-		if(isNote) {
-			list.add(entry.key)
-		} else {
-			list.add(entry.value)
-		}
+		list.add(entry.value)
   	}
   	
 	// 정제된 메세지 
   	def result = list.join("\n")
-	println result
-
 	if(result.length() > 0) {
 		return result
 	} else {
