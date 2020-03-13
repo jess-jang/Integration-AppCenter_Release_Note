@@ -20,7 +20,7 @@ println "JENKINS_AUTHORIZATION : ${System.getenv("JENKINS_AUTHORIZATION")}"
 /**
  * 시작
  */
-def result = reqChangeCommit()()
+def result = reqChangeCommit()
 
 /**
  * 
@@ -56,15 +56,19 @@ def getJenkinsAuth() {
 
 /**
  * 커밋 메세지 조회
- * @return Release Note Template 리턴
  */
 def reqChangeCommit() {
-
 	try {
-      
 		def apiUrl = getJenkinsUrl()
 		def response = reqApi(getJenkinsAuth(), apiUrl)
+		return getTemaplte(response)							
+  	} catch(Exception e) {
+		println e.getMessage()
+	}
+}
 
+def getTemaplte(response) {
+	try {
 		// json으로 변환
 		def json = new JsonSlurper().parseText(response.toString()) 
 
@@ -103,12 +107,12 @@ def reqChangeCommit() {
 		temaplte += "\n\n"
 		temaplte += "** 수정사항 **"
 		temaplte += "\n\n"      
-		temaplte += getNoteContent(true, noteMap)
-		temaplte += getNoteContent(true, etcMap)
+		temaplte += getMapValue(true, noteMap)
+		temaplte += getMapValue(true, etcMap)
 		temaplte += "\n\n"
 		temaplte += "** QA **"
 		temaplte += "\n\n"      
-		temaplte += getNoteContent(true, qaMap)
+		temaplte += getMapValue(true, qaMap)
         
 		/**
 		 * Result
@@ -116,7 +120,7 @@ def reqChangeCommit() {
       		return temaplte      
   	} catch(Exception e) {
 		println e.getMessage()
-	}
+	}	
 }
 
 /**
@@ -143,7 +147,7 @@ def putMapBoolean(map, comment) {
 /**
  * Map 형태의 데이터를 \n \n 로 리턴
  */
-def getNoteContent(map) {
+def getMapValue(map) {
 	def list = []
 	for (entry in map) {
 		list.add(entry.value)
